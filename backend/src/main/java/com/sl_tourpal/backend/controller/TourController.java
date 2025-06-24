@@ -6,6 +6,7 @@ import com.sl_tourpal.backend.service.TourService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/tours")
@@ -16,6 +17,7 @@ public class TourController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('CREATE_TOUR')")
     public ResponseEntity<Tour> createNewTour(@Valid @RequestBody AddTourRequest req) {
         Tour created = tourService.createTour(req);
         return ResponseEntity.status(201).body(created);

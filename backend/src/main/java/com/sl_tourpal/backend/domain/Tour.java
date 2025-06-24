@@ -49,7 +49,9 @@ public class Tour {
     private List<PricingTier> pricingTiers;
 
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AvailabilityRange> availabilityRanges;    @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AvailabilityRange> availabilityRanges;
+
+    @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TourImage> images;
 
     // getters + setters omitted for brevity

@@ -12,6 +12,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sl_tourpal.backend.dto.UserResponseDTO;
+import com.sl_tourpal.backend.domain.Role;
+import java.util.stream.Collectors;
+import com.sl_tourpal.backend.security.CustomUserDetails;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,10 +58,25 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     UserDetails userDetails = (UserDetails) authResult.getPrincipal();
     String token = jwtUtil.generateToken(userDetails);
 
+    // Map the authenticated user to a DTO to avoid exposing sensitive fields
+    CustomUserDetails cud = (CustomUserDetails) userDetails;
+    var user = cud.getUser();
+
+    UserResponseDTO dto = new UserResponseDTO();
+    dto.setId(user.getId());
+    dto.setEmail(user.getEmail());
+    dto.setFirstName(user.getFirstName());
+    dto.setLastName(user.getLastName());
+    dto.setPhone(user.getPhone());
+    dto.setEnabled(user.isEnabled());
+    dto.setRoles(user.getRoles().stream()
+                       .map(Role::getName)
+                       .collect(Collectors.toSet()));
+
     // Build response JSON: { "token": "...", "user": { ... } }
     Map<String, Object> respBody = new HashMap<>();
     respBody.put("token", token);
-    respBody.put("user", userDetails);
+    respBody.put("user", dto);
 
     response.setContentType("application/json");
     new ObjectMapper().writeValue(response.getOutputStream(), respBody);

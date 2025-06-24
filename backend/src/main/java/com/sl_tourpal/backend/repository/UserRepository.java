@@ -10,4 +10,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
   Optional<User> findByEmail(String email);
 }
 // This interface extends JpaRepository to provide CRUD operations for the User entity.
-// It includes a method to find a User by their email, returning an Optional<User>.w
+// It includes a method to find a User by their email, returning an Optional<User>.

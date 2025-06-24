@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/destination/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/tours").hasAuthority("CREATE_TOUR")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilter(authFilter)

@@ -24,6 +24,13 @@ public class CustomUserDetails implements UserDetails {
     this.user = user;
   }
 
+  /**
+   * Expose the underlying {@link User} entity for mapping to DTOs.
+   */
+  public User getUser() {
+    return user;
+  }
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     Set<GrantedAuthority> authorities = new HashSet<>();

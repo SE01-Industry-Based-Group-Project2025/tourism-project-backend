@@ -1,0 +1,48 @@
+{
+  "name": "Sigiriya Adventure Tour",
+  "category": "Cultural",
+  "durationValue": 2,
+  "durationUnit": "days",
+  "shortDescription": "Explore the ancient rock fortress of Sigiriya",
+  "highlights": ["Ancient frescoes", "Lion's Rock", "Water gardens"],
+  "difficulty": "Moderate",
+  "region": "Central",
+  "activities": ["Hiking", "Photography"],
+  "status": "DRAFT",
+  "isCustom": false,
+  "availableSpots": 20,
+  "itineraryDays": [
+    {
+      "dayNumber": 1,
+      "title": "Arrival and Rock Climb",
+      "description": "Climb the famous Sigiriya Rock",
+      "imageUrl": "https://example.com/day1.jpg",
+      "destinations": ["Sigiriya Rock"]
+    }
+  ],
+  "accommodations": [
+    {
+      "title": "Sigiriya Village Hotel",
+      "description": "Comfortable stay near the rock fortress",
+      "images": ["https://example.com/hotel1.jpg"]
+    }
+  ],
+  "pricingTiers": [
+    {
+      "groupType": "Solo",
+      "price": 150.00
+    }
+  ],
+  "availabilityRanges": [
+    {
+      "startDate": "2025-07-01",
+      "endDate": "2025-12-31"
+    }
+  ],
+  "images": [
+    {
+      "url": "https://example.com/sigiriya.jpg",
+      "primary": true
+    }
+  ]
+}

@@ -33,5 +33,5 @@ public class ItineraryDay {
     @JoinColumn(name = "tour_id", nullable = false)
     private Tour tour;
 
-    // getters + setters
+    
 }

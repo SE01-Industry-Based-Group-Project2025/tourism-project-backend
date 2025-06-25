@@ -30,6 +30,11 @@ public class TourServiceImpl implements TourService {
         tour.setRegion(req.getRegion());
         tour.setActivities(req.getActivities());
 
+        // Map new fields with defaults if not provided
+        tour.setStatus(req.getStatus() != null ? req.getStatus() : TourStatus.INCOMPLETE);
+        tour.setIsCustom(req.getIsCustom() != null ? req.getIsCustom() : false);
+        tour.setAvailableSpots(req.getAvailableSpots() != null ? req.getAvailableSpots() : 0);
+
         // map itinerary
         tour.setItineraryDays(
             req.getItineraryDays().stream().map(dto -> {

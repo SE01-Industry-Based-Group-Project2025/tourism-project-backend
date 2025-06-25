@@ -9,7 +9,10 @@ CREATE TABLE IF NOT EXISTS tours (
     duration_unit VARCHAR(50),
     short_description VARCHAR(500),
     difficulty VARCHAR(50),
-    region VARCHAR(100)
+    region VARCHAR(100),
+    status ENUM('Incomplete', 'Ongoing', 'Completed') DEFAULT 'Incomplete',
+    is_custom BOOLEAN DEFAULT FALSE,
+    available_spots INTEGER DEFAULT 0
 );
 
 -- Tour activities (ElementCollection)

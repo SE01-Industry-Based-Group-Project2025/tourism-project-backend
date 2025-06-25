@@ -1,5 +1,6 @@
 package com.sl_tourpal.backend.dto;
 
+import com.sl_tourpal.backend.domain.TourStatus;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,6 +24,11 @@ public class AddTourRequest {
     @NotBlank private String difficulty;
     @NotBlank private String region;
     private Set<String> activities;
+
+    // New fields for enhanced tour management
+    private TourStatus status;
+    private Boolean isCustom;
+    private Integer availableSpots;
 
     // Itinerary
     @NotEmpty private List<ItineraryDayDTO> itineraryDays;

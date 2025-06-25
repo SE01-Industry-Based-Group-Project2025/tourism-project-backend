@@ -38,6 +38,17 @@ public class Tour {
     @Column(name = "activity")
     private Set<String> activities;
 
+    // New fields added for enhanced tour management
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private TourStatus status = TourStatus.INCOMPLETE;
+
+    @Column(name = "is_custom", nullable = false)
+    private Boolean isCustom = false;
+
+    @Column(name = "available_spots", nullable = false)
+    private Integer availableSpots = 0;
+
     // Relationships
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItineraryDay> itineraryDays;

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -49,15 +50,15 @@ public class Tour {
     @Column(name = "available_spots", nullable = false)
     private Integer availableSpots = 0;
 
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal price = BigDecimal.ZERO;
+
     // Relationships
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItineraryDay> itineraryDays;
 
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Accommodation> accommodations;
-
-    @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PricingTier> pricingTiers;
 
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AvailabilityRange> availabilityRanges;

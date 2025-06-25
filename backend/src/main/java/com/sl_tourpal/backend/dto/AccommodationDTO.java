@@ -1,5 +1,6 @@
 package com.sl_tourpal.backend.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +14,6 @@ import java.util.List;
 public class AccommodationDTO {
     @NotBlank private String title;
     private String description;
-    @NotEmpty private List<@NotBlank String> images;
+    @Valid private List<AccommodationImageDto> images;
     // getters / setters
 }

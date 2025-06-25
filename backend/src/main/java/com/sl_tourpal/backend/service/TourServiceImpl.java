@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sl_tourpal.backend.dto.*;
 import com.sl_tourpal.backend.domain.*;
 import com.sl_tourpal.backend.repository.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +35,7 @@ public class TourServiceImpl implements TourService {
         tour.setStatus(req.getStatus() != null ? req.getStatus() : TourStatus.INCOMPLETE);
         tour.setIsCustom(req.getIsCustom() != null ? req.getIsCustom() : false);
         tour.setAvailableSpots(req.getAvailableSpots() != null ? req.getAvailableSpots() : 0);
+        tour.setPrice(req.getPrice());
 
         // map itinerary
         tour.setItineraryDays(
@@ -55,20 +57,16 @@ public class TourServiceImpl implements TourService {
                 Accommodation a = new Accommodation();
                 a.setTitle(dto.getTitle());
                 a.setDescription(dto.getDescription());
-                a.setImages(dto.getImages());
+                // Convert AccommodationImageDto to String URLs/base64
+                if (dto.getImages() != null) {
+                    List<String> imageUrls = dto.getImages().stream()
+                        .map(img -> img.getPreview()) // Use preview field as the image URL/base64
+                        .filter(url -> url != null && !url.isEmpty())
+                        .collect(Collectors.toList());
+                    a.setImages(imageUrls);
+                }
                 a.setTour(tour);
                 return a;
-            }).collect(Collectors.toList())
-        );
-
-        // map pricing tiers
-        tour.setPricingTiers(
-            req.getPricingTiers().stream().map(dto -> {
-                PricingTier p = new PricingTier();
-                p.setGroupType(dto.getGroupType());
-                p.setPrice(dto.getPrice());
-                p.setTour(tour);
-                return p;
             }).collect(Collectors.toList())
         );
 
@@ -83,16 +81,18 @@ public class TourServiceImpl implements TourService {
             }).collect(Collectors.toList())
         );
 
-        // map images
-        tour.setImages(
-            req.getImages().stream().map(dto -> {
-                TourImage img = new TourImage();
-                img.setUrl(dto.getUrl());
-                img.setPrimary(dto.isPrimary());
-                img.setTour(tour);
-                return img;
-            }).collect(Collectors.toList())
-        );
+        // map images (optional)
+        if (req.getImages() != null && !req.getImages().isEmpty()) {
+            tour.setImages(
+                req.getImages().stream().map(dto -> {
+                    TourImage img = new TourImage();
+                    img.setUrl(dto.getUrl());
+                    img.setPrimary(dto.isPrimary());
+                    img.setTour(tour);
+                    return img;
+                }).collect(Collectors.toList())
+            );
+        }
 
         // saves tour + cascades
         return tourRepo.save(tour);

@@ -17,7 +17,7 @@ public class TourController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('CREATE_TOUR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Tour> createNewTour(@Valid @RequestBody AddTourRequest req) {
         Tour created = tourService.createTour(req);
         return ResponseEntity.status(201).body(created);

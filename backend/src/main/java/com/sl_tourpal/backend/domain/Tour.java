@@ -1,13 +1,16 @@
 package com.sl_tourpal.backend.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "tours")
@@ -29,7 +32,7 @@ public class Tour {
     @ElementCollection
     @CollectionTable(name = "tour_highlights", joinColumns = @JoinColumn(name = "tour_id"))
     @Column(name = "highlight")
-    private List<String> highlights;
+    private List<String> highlights = new ArrayList<>();
 
     private String difficulty;
     private String region;
@@ -37,12 +40,11 @@ public class Tour {
     @ElementCollection
     @CollectionTable(name = "tour_activities", joinColumns = @JoinColumn(name = "tour_id"))
     @Column(name = "activity")
-    private Set<String> activities;
+    private Set<String> activities = new HashSet<>();
 
     // New fields added for enhanced tour management
-    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private TourStatus status = TourStatus.INCOMPLETE;
+    private String status = "Incomplete";
 
     @Column(name = "is_custom", nullable = false)
     private Boolean isCustom = false;
@@ -55,16 +57,20 @@ public class Tour {
 
     // Relationships
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ItineraryDay> itineraryDays;
+    @JsonManagedReference
+    private List<ItineraryDay> itineraryDays = new ArrayList<>();
 
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Accommodation> accommodations;
+    @JsonManagedReference
+    private List<Accommodation> accommodations = new ArrayList<>();
 
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AvailabilityRange> availabilityRanges;
+    @JsonManagedReference
+    private List<AvailabilityRange> availabilityRanges = new ArrayList<>();
 
     @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TourImage> images;
+    @JsonManagedReference
+    private List<TourImage> images = new ArrayList<>();
 
     // getters + setters omitted for brevity
 }

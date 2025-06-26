@@ -23,12 +23,12 @@ public class FlywayFixConfig {
                     System.out.println("Cleaned up failed Flyway migration for version 7");
                 }
                 
-                // Update invalid tour status values
-                int updated = jdbcTemplate.update("UPDATE tours SET status = 'Incomplete' WHERE status IS NOT NULL AND status NOT IN ('Incomplete', 'Ongoing', 'Completed')");
+                // Update invalid tour status values - using uppercase values and including UPCOMING
+                int updated = jdbcTemplate.update("UPDATE tours SET status = 'INCOMPLETE' WHERE status IS NOT NULL AND status NOT IN ('INCOMPLETE', 'UPCOMING', 'ONGOING', 'COMPLETED')");
                 System.out.println("Updated " + updated + " tours with invalid status values");
                 
                 // Set any NULL status values
-                int nullUpdated = jdbcTemplate.update("UPDATE tours SET status = 'Incomplete' WHERE status IS NULL");
+                int nullUpdated = jdbcTemplate.update("UPDATE tours SET status = 'INCOMPLETE' WHERE status IS NULL");
                 System.out.println("Updated " + nullUpdated + " tours with NULL status values");
                 
             } catch (Exception e) {

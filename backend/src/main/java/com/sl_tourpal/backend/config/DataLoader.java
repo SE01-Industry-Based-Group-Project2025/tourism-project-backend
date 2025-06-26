@@ -41,7 +41,7 @@ public class DataLoader implements ApplicationRunner {
         System.out.println("Current counts - Places: " + placeCount + ", Activities: " + activityCount + ", Tours: " + tourCount);
         
         // Force reseed option - set to true to clear and reseed all data
-        boolean forceReseed = false; // Change to true if you want to clear and reseed
+        boolean forceReseed = true; // Enabled to fix FlywayFixConfig issue
         
         if (forceReseed) {
             System.out.println("Force reseed enabled - clearing existing data...");
@@ -163,7 +163,7 @@ public class DataLoader implements ApplicationRunner {
         tour.setShortDescription("Explore the ancient cultural sites of Sri Lanka");
         tour.setDifficulty("Easy");
         tour.setRegion("North Central Province");
-        tour.setStatus("Incomplete");
+        tour.setStatus("INCOMPLETE");
         tour.setIsCustom(false);
         tour.setAvailableSpots(0);
         tour.setPrice(BigDecimal.ZERO);
@@ -192,7 +192,7 @@ public class DataLoader implements ApplicationRunner {
         tour.setShortDescription("Experience the beautiful southern coast");
         tour.setDifficulty("Moderate");
         tour.setRegion("Southern Province");
-        tour.setStatus("Incomplete");
+        tour.setStatus("INCOMPLETE");
         tour.setIsCustom(false);
         tour.setAvailableSpots(0);
         tour.setPrice(BigDecimal.ZERO);
@@ -221,7 +221,7 @@ public class DataLoader implements ApplicationRunner {
         tour.setShortDescription("A comprehensive cultural journey through Sri Lanka's ancient kingdoms and sacred sites");
         tour.setDifficulty("Easy");
         tour.setRegion("Multiple Provinces");
-        tour.setStatus("Upcoming");
+        tour.setStatus("UPCOMING");
         tour.setIsCustom(false);
         tour.setAvailableSpots(15);
         tour.setPrice(new BigDecimal("850.00"));
@@ -286,7 +286,7 @@ public class DataLoader implements ApplicationRunner {
         tour.setShortDescription("Experience Sri Lanka's incredible wildlife and pristine beaches");
         tour.setDifficulty("Moderate");
         tour.setRegion("Southern Province");
-        tour.setStatus("Upcoming");
+        tour.setStatus("UPCOMING");
         tour.setIsCustom(false);
         tour.setAvailableSpots(12);
         tour.setPrice(new BigDecimal("650.00"));
@@ -348,7 +348,7 @@ public class DataLoader implements ApplicationRunner {
         tour.setShortDescription("Journey through Sri Lanka's scenic tea country with plantation visits and mountain views");
         tour.setDifficulty("Easy");
         tour.setRegion("Central Province");
-        tour.setStatus("Upcoming");
+        tour.setStatus("UPCOMING");
         tour.setIsCustom(false);
         tour.setAvailableSpots(20);
         tour.setPrice(new BigDecimal("450.00"));

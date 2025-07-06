@@ -1,19 +1,28 @@
 package com.sl_tourpal.backend.controller;
 
-import com.sl_tourpal.backend.dto.AddTourRequest;
-import com.sl_tourpal.backend.domain.Tour;
-import com.sl_tourpal.backend.service.TourService;
-import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.security.access.prepost.PreAuthorize;
-
 import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.sl_tourpal.backend.domain.Tour;
+import com.sl_tourpal.backend.dto.AddTourRequest;
+import com.sl_tourpal.backend.service.TourService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/tours")
 public class TourController {
-    private final TourService tourService;
+    private final TourService tourService; //injected service for tour operations
     public TourController(TourService tourService) {
         this.tourService = tourService;
     }

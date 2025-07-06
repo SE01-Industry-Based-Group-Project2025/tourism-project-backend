@@ -1,18 +1,24 @@
 package com.sl_tourpal.backend.service;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import com.sl_tourpal.backend.dto.*;
-import com.sl_tourpal.backend.domain.*;
-import com.sl_tourpal.backend.repository.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sl_tourpal.backend.domain.Accommodation;
+import com.sl_tourpal.backend.domain.AvailabilityRange;
+import com.sl_tourpal.backend.domain.ItineraryDay;
+import com.sl_tourpal.backend.domain.Tour;
+import com.sl_tourpal.backend.domain.TourImage;
+import com.sl_tourpal.backend.dto.AddTourRequest;
+import com.sl_tourpal.backend.repository.TourRepository;
+
 @Service
 public class TourServiceImpl implements TourService {
 
-    private final TourRepository tourRepo;
+    private final TourRepository tourRepo;  // injected repository for tour operations
     public TourServiceImpl(TourRepository tourRepo) {
         this.tourRepo = tourRepo;
     }

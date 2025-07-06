@@ -1,9 +1,12 @@
 package com.sl_tourpal.backend.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,16 +15,23 @@ import com.sl_tourpal.backend.domain.AvailabilityRange;
 import com.sl_tourpal.backend.domain.ItineraryDay;
 import com.sl_tourpal.backend.domain.Tour;
 import com.sl_tourpal.backend.domain.TourImage;
+import com.sl_tourpal.backend.domain.User;
 import com.sl_tourpal.backend.dto.AddTourRequest;
+import com.sl_tourpal.backend.dto.TouristTourRequestDTO; // Fixed: Added missing import
 import com.sl_tourpal.backend.repository.TourRepository;
+import com.sl_tourpal.backend.repository.UserRepository;
 
 @Service
 public class TourServiceImpl implements TourService {
 
-    private final TourRepository tourRepo;  // injected repository for tour operations
+    private final TourRepository tourRepo;
+    
     public TourServiceImpl(TourRepository tourRepo) {
         this.tourRepo = tourRepo;
     }
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     @Transactional
@@ -40,8 +50,12 @@ public class TourServiceImpl implements TourService {
 
         // Map new fields with defaults if not provided
         tour.setStatus(req.getStatus() != null ? req.getStatus() : "Incomplete");
-        tour.setIsCustom(req.getIsCustom() != null ? req.getIsCustom() : false);
-        tour.setAvailableSpots(req.getAvailableSpots() != null ? req.getAvailableSpots() : 0);
+        tour.setIsCustom(Boolean.TRUE.equals(req.getIsCustom()));
+        if (req.getAvailableSpots() != null) {
+            tour.setAvailableSpots(req.getAvailableSpots());
+        } else {
+            tour.setAvailableSpots(Integer.valueOf(0));
+        }
         tour.setPrice(req.getPrice());
 
         // map itinerary
@@ -148,8 +162,12 @@ public class TourServiceImpl implements TourService {
         
         // Update new fields
         existingTour.setStatus(req.getStatus() != null ? req.getStatus() : "Incomplete");
-        existingTour.setIsCustom(req.getIsCustom() != null ? req.getIsCustom() : false);
-        existingTour.setAvailableSpots(req.getAvailableSpots() != null ? req.getAvailableSpots() : 0);
+        existingTour.setIsCustom(Boolean.TRUE.equals(req.getIsCustom()));
+        if (req.getAvailableSpots() != null) {
+            existingTour.setAvailableSpots(req.getAvailableSpots());
+        } else {
+            existingTour.setAvailableSpots(Integer.valueOf(0));
+        }
         existingTour.setPrice(req.getPrice());
 
         // Update itinerary days - clear existing and add new ones
@@ -223,5 +241,124 @@ public class TourServiceImpl implements TourService {
     public void deleteTour(Long id) {
         Tour tour = getTourById(id);
         tourRepo.delete(tour);
+    }
+
+    @Override // Fixed: Added @Override annotation
+    public Tour createCustomTourRequest(TouristTourRequestDTO touristRequest, String userEmail) {
+        // Get the requesting user
+        User requestingUser = userRepository.findByEmail(userEmail)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Validate date range
+        if (touristRequest.getEndDate().isBefore(touristRequest.getStartDate())) {
+            throw new RuntimeException("End date must be after start date");
+        }
+        
+        // Convert TouristTourRequestDTO to AddTourRequest
+        AddTourRequest addTourRequest = new AddTourRequest();
+        addTourRequest.setName(touristRequest.getName());
+        addTourRequest.setCategory("Custom Tour Request");
+        addTourRequest.setDurationValue(touristRequest.getDurationValue());
+        addTourRequest.setDurationUnit(touristRequest.getDurationUnit());
+        addTourRequest.setRegion(touristRequest.getRegion());
+        addTourRequest.setActivities(new HashSet<>(touristRequest.getActivities()));
+        addTourRequest.setPrice(touristRequest.getPrice());
+        addTourRequest.setShortDescription(touristRequest.getSpecialRequirements());
+        addTourRequest.setAvailableSpots(touristRequest.getGroupSize());
+        addTourRequest.setDifficulty("To be determined");
+        addTourRequest.setIsCustom(true);
+        addTourRequest.setStatus("PENDING_APPROVAL");
+        
+        // Set highlights with user and date info
+        List<String> highlights = new ArrayList<>();
+        highlights.add("Custom tour request");
+        highlights.add("Requested by: " + requestingUser.getFirstName() + " " + requestingUser.getLastName());
+        highlights.add("Contact: " + requestingUser.getEmail());
+        highlights.add("Requested dates: " + touristRequest.getStartDate() + " to " + touristRequest.getEndDate());
+        highlights.add("Group size: " + touristRequest.getGroupSize() + " people");
+        addTourRequest.setHighlights(highlights);
+        
+        // Create the tour using existing method
+        Tour customTour = createTour(addTourRequest);
+        
+        // Set the creating user and timestamps
+        customTour.setCreatedBy(requestingUser);
+        customTour.setCreatedAt(LocalDateTime.now());
+        
+        return tourRepo.save(customTour);
+    }
+
+    @Override // Fixed: Added @Override annotation
+    public List<Tour> getCustomToursByUser(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        return tourRepo.findByIsCustomTrueAndCreatedByOrderByCreatedAtDesc(user);
+    }
+
+    @Override // Fixed: Added @Override annotation
+    public List<Tour> getPendingCustomTours() {
+        return tourRepo.findByIsCustomTrueAndStatus("PENDING_APPROVAL");
+    }
+
+    @Override // Fixed: Added @Override annotation
+    public List<Tour> getAllCustomTours() {
+        return tourRepo.findByIsCustomTrue();
+    }
+
+    @Override // Fixed: Added @Override annotation
+    public Tour approveCustomTour(Long tourId) {
+        Tour tour = tourRepo.findById(tourId)
+            .orElseThrow(() -> new RuntimeException("Tour not found"));
+        
+        if (!tour.getIsCustom()) {
+            throw new RuntimeException("Only custom tours can be approved");
+        }
+        
+        tour.setStatus("APPROVED");
+        tour.setUpdatedAt(LocalDateTime.now());
+        return tourRepo.save(tour);
+    }
+
+    @Override // Fixed: Added @Override annotation
+    public Tour rejectCustomTour(Long tourId, String reason) {
+        Tour tour = tourRepo.findById(tourId)
+            .orElseThrow(() -> new RuntimeException("Tour not found"));
+        
+        if (!tour.getIsCustom()) {
+            throw new RuntimeException("Only custom tours can be rejected");
+        }
+        
+        tour.setStatus("REJECTED");
+        tour.setUpdatedAt(LocalDateTime.now());
+        
+        // Add rejection reason to description
+        String currentDesc = tour.getShortDescription() != null ? tour.getShortDescription() : "";
+        tour.setShortDescription(currentDesc + "\n\nRejection reason: " + reason);
+        
+        return tourRepo.save(tour);
+    }
+
+    @Override // Fixed: Added @Override annotation
+    public Tour updateCustomTourStatus(Long tourId, String status) {
+        Tour tour = tourRepo.findById(tourId)
+            .orElseThrow(() -> new RuntimeException("Tour not found"));
+        
+        if (!tour.getIsCustom()) {
+            throw new RuntimeException("Only custom tours can have status updated");
+        }
+        
+        tour.setStatus(status);
+        tour.setUpdatedAt(LocalDateTime.now());
+        return tourRepo.save(tour);
+    }
+
+    @Override
+    public List<Tour> findByIsCustomTrueAndStatus(String status) {
+        return tourRepo.findByIsCustomTrueAndStatus(status);
+    }
+
+    @Override
+    public List<Tour> findByIsCustomFalse() {
+        return tourRepo.findByIsCustomFalse();
     }
 }

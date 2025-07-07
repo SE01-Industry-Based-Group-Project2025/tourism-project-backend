@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.validation.Valid;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
@@ -20,7 +22,7 @@ public class AddTourRequest {
     @NotNull  private Integer durationValue;
     @NotBlank private String durationUnit;
     @Size(max = 500) private String shortDescription;
-    @NotEmpty private List<@NotBlank String> highlights;
+    @Valid private List<@NotBlank String> highlights;
     @NotBlank private String difficulty;
     @NotBlank private String region;
     private Set<String> activities;

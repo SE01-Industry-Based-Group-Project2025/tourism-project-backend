@@ -40,4 +40,8 @@ public class ActivityService {
     public void deleteActivity(Long id) {
         activityRepository.deleteById(id);
     }
+
+    public List<Activity> getActivitiesByRegions(List<String> regions) {
+        return activityRepository.findByRegionIn(regions);
+    }
 }

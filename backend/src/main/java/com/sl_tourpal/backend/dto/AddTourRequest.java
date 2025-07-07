@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -24,20 +25,27 @@ public class AddTourRequest {
     @NotBlank private String region;
     private Set<String> activities;
 
+    // New fields for enhanced tour management
+    private String status;
+    private Boolean isCustom;
+    private Integer availableSpots;
+
+    // Single price instead of pricing tiers
+    @NotNull
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
+    private BigDecimal price;
+
     // Itinerary
-    @NotEmpty private List<ItineraryDayDTO> itineraryDays;
+    private List<ItineraryDayDTO> itineraryDays;
 
     // Accommodation
-    @NotEmpty private List<AccommodationDTO> accommodations;
-
-    // Pricing
-    @NotEmpty private List<PricingTierDTO> pricingTiers;
+    private List<AccommodationDTO> accommodations;
 
     // Availability
-    @NotEmpty private List<AvailabilityRangeDTO> availabilityRanges;
+    private List<AvailabilityRangeDTO> availabilityRanges;
 
     // Media
-    @NotEmpty private List<TourImageDTO> images;
+    private List<TourImageDTO> images;
 
     // getters + setters omitted for brevity
 }

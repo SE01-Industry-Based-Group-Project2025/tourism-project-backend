@@ -1,0 +1,48 @@
+{
+  "name": "Custom Kandy Experience",
+  "category": "Cultural",
+  "durationValue": 1,
+  "durationUnit": "day",
+  "shortDescription": "A personalized cultural experience in Kandy",
+  "highlights": ["Temple of Tooth", "Botanical Gardens"],
+  "difficulty": "Easy",
+  "region": "Central",
+  "activities": ["Sightseeing"],
+  "status": "PUBLISHED",
+  "isCustom": true,
+  "availableSpots": 10,
+  "itineraryDays": [
+    {
+      "dayNumber": 1,
+      "title": "Kandy City Tour",
+      "description": "Explore the cultural capital",
+      "imageUrl": "https://example.com/kandy.jpg",
+      "destinations": ["Temple of Tooth", "Kandy Lake"]
+    }
+  ],
+  "accommodations": [
+    {
+      "title": "Kandy Heritage Hotel",
+      "description": "Traditional stay in the hills",
+      "images": ["https://example.com/heritage.jpg"]
+    }
+  ],
+  "pricingTiers": [
+    {
+      "groupType": "Couple",
+      "price": 200.00
+    }
+  ],
+  "availabilityRanges": [
+    {
+      "startDate": "2025-08-01",
+      "endDate": "2025-12-31"
+    }
+  ],
+  "images": [
+    {
+      "url": "https://example.com/kandy-main.jpg",
+      "primary": true
+    }
+  ]
+}

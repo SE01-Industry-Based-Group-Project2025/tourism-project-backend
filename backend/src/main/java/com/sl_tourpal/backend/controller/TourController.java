@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sl_tourpal.backend.domain.Tour;
 import com.sl_tourpal.backend.dto.AddTourRequest;
 import com.sl_tourpal.backend.dto.TouristTourRequestDTO;
+import com.sl_tourpal.backend.dto.TourResponseDTO;
 import com.sl_tourpal.backend.service.TourService;
 import com.sl_tourpal.backend.security.JwtUtil;
 
@@ -118,16 +119,16 @@ public class TourController {
     // Admin can view all custom tours
     @GetMapping("/all-custom")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Tour>> getAllCustomTours() {
-        List<Tour> customTours = tourService.getAllCustomTours();
+    public ResponseEntity<List<TourResponseDTO>> getAllCustomTours() {
+        List<TourResponseDTO> customTours = tourService.getAllCustomTours();
         return ResponseEntity.ok(customTours);
     }
 
     // Admin can view all pending custom tours
     @GetMapping("/pending-custom")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Tour>> getPendingCustomTours() {
-        List<Tour> pendingTours = tourService.getPendingCustomTours();
+    public ResponseEntity<List<TourResponseDTO>> getPendingCustomTours() {
+        List<TourResponseDTO> pendingTours = tourService.getPendingCustomTours();
         return ResponseEntity.ok(pendingTours);
     }
 
@@ -183,7 +184,7 @@ public class TourController {
             if (status != null) {
                 tours = tourService.findByIsCustomTrueAndStatus(status);
             } else {
-                tours = tourService.getAllCustomTours();
+                tours = tourService.getAllCustomToursAsEntity();
             }
         } else if (isCustom != null && !isCustom) {
             tours = tourService.findByIsCustomFalse();

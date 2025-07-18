@@ -18,16 +18,20 @@ import com.sl_tourpal.backend.domain.TourImage;
 import com.sl_tourpal.backend.domain.User;
 import com.sl_tourpal.backend.dto.AddTourRequest;
 import com.sl_tourpal.backend.dto.TouristTourRequestDTO; // Fixed: Added missing import
+import com.sl_tourpal.backend.dto.TourResponseDTO;
 import com.sl_tourpal.backend.repository.TourRepository;
 import com.sl_tourpal.backend.repository.UserRepository;
+import com.sl_tourpal.backend.util.TourMapper;
 
 @Service
 public class TourServiceImpl implements TourService {
 
     private final TourRepository tourRepo;
+    private final TourMapper tourMapper;
     
-    public TourServiceImpl(TourRepository tourRepo) {
+    public TourServiceImpl(TourRepository tourRepo, TourMapper tourMapper) {
         this.tourRepo = tourRepo;
+        this.tourMapper = tourMapper;
     }
 
     @Autowired
@@ -302,12 +306,19 @@ public class TourServiceImpl implements TourService {
     }
 
     @Override // Fixed: Added @Override annotation
-    public List<Tour> getPendingCustomTours() {
-        return tourRepo.findByIsCustomTrueAndStatus("PENDING_APPROVAL");
+    public List<TourResponseDTO> getPendingCustomTours() {
+        List<Tour> tours = tourRepo.findByIsCustomTrueAndStatus("PENDING_APPROVAL");
+        return tourMapper.toResponseDTOList(tours);
     }
 
     @Override // Fixed: Added @Override annotation
-    public List<Tour> getAllCustomTours() {
+    public List<TourResponseDTO> getAllCustomTours() {
+        List<Tour> tours = tourRepo.findByIsCustomTrue();
+        return tourMapper.toResponseDTOList(tours);
+    }
+
+    @Override
+    public List<Tour> getAllCustomToursAsEntity() {
         return tourRepo.findByIsCustomTrue();
     }
 

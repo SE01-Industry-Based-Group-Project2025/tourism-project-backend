@@ -1,10 +1,10 @@
 package com.sl_tourpal.backend.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,16 +18,20 @@ import com.sl_tourpal.backend.domain.TourImage;
 import com.sl_tourpal.backend.domain.User;
 import com.sl_tourpal.backend.dto.AddTourRequest;
 import com.sl_tourpal.backend.dto.TouristTourRequestDTO; // Fixed: Added missing import
+import com.sl_tourpal.backend.dto.TourResponseDTO;
 import com.sl_tourpal.backend.repository.TourRepository;
 import com.sl_tourpal.backend.repository.UserRepository;
+import com.sl_tourpal.backend.util.TourMapper;
 
 @Service
 public class TourServiceImpl implements TourService {
 
     private final TourRepository tourRepo;
+    private final TourMapper tourMapper;
     
-    public TourServiceImpl(TourRepository tourRepo) {
+    public TourServiceImpl(TourRepository tourRepo, TourMapper tourMapper) {
         this.tourRepo = tourRepo;
+        this.tourMapper = tourMapper;
     }
 
     @Autowired
@@ -54,7 +58,7 @@ public class TourServiceImpl implements TourService {
         if (req.getAvailableSpots() != null) {
             tour.setAvailableSpots(req.getAvailableSpots());
         } else {
-            tour.setAvailableSpots(Integer.valueOf(0));
+            tour.setAvailableSpots(0);
         }
         tour.setPrice(req.getPrice());
 
@@ -155,7 +159,13 @@ public class TourServiceImpl implements TourService {
         existingTour.setDurationValue(req.getDurationValue());
         existingTour.setDurationUnit(req.getDurationUnit());
         existingTour.setShortDescription(req.getShortDescription());
-        existingTour.setHighlights(req.getHighlights());
+        
+        // Handle highlights - preserve existing if new list is empty or null
+        if (req.getHighlights() != null && !req.getHighlights().isEmpty()) {
+            existingTour.setHighlights(req.getHighlights());
+        }
+        // If highlights is empty/null, keep existing highlights
+        
         existingTour.setDifficulty(req.getDifficulty());
         existingTour.setRegion(req.getRegion());
         existingTour.setActivities(req.getActivities());
@@ -166,7 +176,7 @@ public class TourServiceImpl implements TourService {
         if (req.getAvailableSpots() != null) {
             existingTour.setAvailableSpots(req.getAvailableSpots());
         } else {
-            existingTour.setAvailableSpots(Integer.valueOf(0));
+            existingTour.setAvailableSpots(0);
         }
         existingTour.setPrice(req.getPrice());
 
@@ -296,12 +306,19 @@ public class TourServiceImpl implements TourService {
     }
 
     @Override // Fixed: Added @Override annotation
-    public List<Tour> getPendingCustomTours() {
-        return tourRepo.findByIsCustomTrueAndStatus("PENDING_APPROVAL");
+    public List<TourResponseDTO> getPendingCustomTours() {
+        List<Tour> tours = tourRepo.findByIsCustomTrueAndStatus("PENDING_APPROVAL");
+        return tourMapper.toResponseDTOList(tours);
     }
 
     @Override // Fixed: Added @Override annotation
-    public List<Tour> getAllCustomTours() {
+    public List<TourResponseDTO> getAllCustomTours() {
+        List<Tour> tours = tourRepo.findByIsCustomTrue();
+        return tourMapper.toResponseDTOList(tours);
+    }
+
+    @Override
+    public List<Tour> getAllCustomToursAsEntity() {
         return tourRepo.findByIsCustomTrue();
     }
 

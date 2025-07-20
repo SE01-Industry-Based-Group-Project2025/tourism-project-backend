@@ -4,6 +4,7 @@ import java.util.List;
 import com.sl_tourpal.backend.domain.Tour;
 import com.sl_tourpal.backend.dto.AddTourRequest;
 import com.sl_tourpal.backend.dto.TouristTourRequestDTO;
+import com.sl_tourpal.backend.dto.TourResponseDTO;
 
 public interface TourService {
     
@@ -17,8 +18,9 @@ public interface TourService {
     // New custom tour methods
     Tour createCustomTourRequest(TouristTourRequestDTO touristRequest, String userEmail);
     List<Tour> getCustomToursByUser(String userEmail);
-    List<Tour> getPendingCustomTours();
-    List<Tour> getAllCustomTours();
+    List<TourResponseDTO> getPendingCustomTours();
+    List<TourResponseDTO> getAllCustomTours();
+    List<Tour> getAllCustomToursAsEntity(); // For filtering endpoints
     Tour approveCustomTour(Long tourId);
     Tour rejectCustomTour(Long tourId, String reason);
     Tour updateCustomTourStatus(Long tourId, String status);

@@ -21,4 +21,7 @@ public interface TourRepository extends JpaRepository<Tour, Long> {
     List<Tour> findByCreatedBy(User createdBy);
 
     List<Tour> findByIsCustomTrueAndCreatedByOrderByCreatedAtDesc(User createdBy);
+    
+    // Template/Tour queries
+    List<Tour> findByIsTemplate(boolean isTemplate);
 }

@@ -1,17 +1,31 @@
 package com.sl_tourpal.backend.domain;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "tours")
@@ -49,6 +63,9 @@ public class Tour {
 
     @Column(name = "is_custom", nullable = false)
     private Boolean isCustom = false;
+
+    @Column(name = "is_template", nullable = false)
+    private boolean isTemplate = false;
 
     @Column(name = "available_spots", nullable = false)
     private Integer availableSpots = 0;
@@ -89,6 +106,20 @@ public class Tour {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public boolean getIsTemplate() {
+        return isTemplate;
+    }
+
+    public void setIsTemplate(boolean isTemplate) {
+        this.isTemplate = isTemplate;
+    }
+    
+    // Alternative getter for boolean naming convention
+    @JsonProperty("isTemplate")
+    public boolean isTemplate() {
+        return isTemplate;
     }
 
     // Relationships

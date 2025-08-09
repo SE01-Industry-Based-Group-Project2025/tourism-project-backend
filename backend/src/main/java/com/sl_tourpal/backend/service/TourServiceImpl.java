@@ -1,5 +1,6 @@
 package com.sl_tourpal.backend.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -17,14 +18,18 @@ import com.sl_tourpal.backend.domain.Tour;
 import com.sl_tourpal.backend.domain.TourImage;
 import com.sl_tourpal.backend.domain.User;
 import com.sl_tourpal.backend.dto.AddTourRequest;
-import com.sl_tourpal.backend.dto.TouristTourRequestDTO; // Fixed: Added missing import
-import com.sl_tourpal.backend.dto.TourResponseDTO;
+import com.sl_tourpal.backend.dto.TourResponseDTO; // Fixed: Added missing import
+import com.sl_tourpal.backend.dto.TouristTourRequestDTO;
 import com.sl_tourpal.backend.repository.TourRepository;
 import com.sl_tourpal.backend.repository.UserRepository;
 import com.sl_tourpal.backend.util.TourMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class TourServiceImpl implements TourService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TourServiceImpl.class);
 
     private final TourRepository tourRepo;
     private final TourMapper tourMapper;
@@ -40,27 +45,63 @@ public class TourServiceImpl implements TourService {
     @Override
     @Transactional
     public Tour createTour(AddTourRequest req) {
+        // Conditional validation based on isTemplate
+        boolean isTemplate = req.isTemplate();
+        
+        logger.info("Creating tour with isTemplate: {}, name: {}", isTemplate, req.getName());
+        
+        if (!isTemplate) {
+            // Strict validation for real tours (isTemplate = false)
+            logger.info("Applying strict validation for non-template tour");
+            validateRequiredFieldsForTour(req);
+        } else {
+            logger.info("Skipping validation for template");
+        }
+        
         Tour tour = new Tour();
-        // map basic fields
+        
+        // Map required fields (always present for both templates and tours)
         tour.setName(req.getName());
         tour.setCategory(req.getCategory());
         tour.setDurationValue(req.getDurationValue());
         tour.setDurationUnit(req.getDurationUnit());
         tour.setShortDescription(req.getShortDescription());
-        tour.setHighlights(req.getHighlights());
-        tour.setDifficulty(req.getDifficulty());
-        tour.setRegion(req.getRegion());
-        tour.setActivities(req.getActivities());
+        
+        // Map optional fields only if provided
+        if (req.getHighlights() != null) {
+            tour.setHighlights(req.getHighlights());
+        }
+        
+        if (req.getDifficulty() != null) {
+            tour.setDifficulty(req.getDifficulty());
+        }
+        
+        if (req.getRegion() != null) {
+            tour.setRegion(req.getRegion());
+        }
+        
+        if (req.getActivities() != null) {
+            tour.setActivities(req.getActivities());
+        }
 
         // Map new fields with defaults if not provided
-        tour.setStatus(req.getStatus() != null ? req.getStatus() : "Incomplete");
+        tour.setStatus(req.getStatus() != null ? req.getStatus() : (isTemplate ? "Template" : "Incomplete"));
         tour.setIsCustom(Boolean.TRUE.equals(req.getIsCustom()));
+        
+        // Set isTemplate based on request, always creates a new row
+        tour.setIsTemplate(isTemplate);
+
         if (req.getAvailableSpots() != null) {
             tour.setAvailableSpots(req.getAvailableSpots());
         } else {
             tour.setAvailableSpots(0);
         }
-        tour.setPrice(req.getPrice());
+        
+        if (req.getPrice() != null) {
+            tour.setPrice(req.getPrice());
+        } else {
+            tour.setPrice(BigDecimal.ZERO);
+        }
 
         // map itinerary
         if (req.getItineraryDays() != null) {
@@ -377,5 +418,57 @@ public class TourServiceImpl implements TourService {
     @Override
     public List<Tour> findByIsCustomFalse() {
         return tourRepo.findByIsCustomFalse();
+    }
+    
+    @Override
+    public List<Tour> getToursByTemplate(boolean isTemplate) {
+        return tourRepo.findByIsTemplate(isTemplate);
+    }
+    
+    /**
+     * Validates required fields for non-template tours
+     */
+    private void validateRequiredFieldsForTour(AddTourRequest req) {
+        List<String> errors = new ArrayList<>();
+        
+        // Validate highlights
+        if (req.getHighlights() == null || req.getHighlights().isEmpty()) {
+            errors.add("Highlights are required for published tours");
+        }
+        
+        // Validate difficulty
+        if (req.getDifficulty() == null || req.getDifficulty().trim().isEmpty()) {
+            errors.add("Difficulty is required for published tours");
+        }
+        
+        // Validate region
+        if (req.getRegion() == null || req.getRegion().trim().isEmpty()) {
+            errors.add("Region is required for published tours");
+        }
+        
+        // Validate price
+        if (req.getPrice() == null || req.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            errors.add("Price must be greater than 0 for published tours");
+        }
+        
+        // Validate availability ranges
+        if (req.getAvailabilityRanges() == null || req.getAvailabilityRanges().isEmpty()) {
+            errors.add("Availability ranges are required for published tours");
+        }
+        
+        // Validate itinerary days
+        if (req.getItineraryDays() == null || req.getItineraryDays().isEmpty()) {
+            errors.add("Itinerary days are required for published tours");
+        }
+        
+        // Validate accommodations
+        if (req.getAccommodations() == null || req.getAccommodations().isEmpty()) {
+            errors.add("Accommodations are required for published tours");
+        }
+        
+        // If there are validation errors, throw an exception
+        if (!errors.isEmpty()) {
+            throw new IllegalArgumentException("Validation failed for published tour: " + String.join(", ", errors));
+        }
     }
 }

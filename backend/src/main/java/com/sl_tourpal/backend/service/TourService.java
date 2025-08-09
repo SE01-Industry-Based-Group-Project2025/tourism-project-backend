@@ -28,4 +28,7 @@ public interface TourService {
     // Additional filtering methods
     List<Tour> findByIsCustomTrueAndStatus(String status);
     List<Tour> findByIsCustomFalse();
+    
+    // Template/Tour filtering methods
+    List<Tour> getToursByTemplate(boolean isTemplate);
 }

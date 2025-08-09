@@ -1,13 +1,14 @@
 package com.sl_tourpal.backend.dto;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -27,6 +28,7 @@ public class TourResponseDTO {
     // Tour management fields
     private String status;
     private Boolean isCustom;
+    private boolean isTemplate;
     private Integer availableSpots;
     private BigDecimal price;
     
@@ -36,6 +38,20 @@ public class TourResponseDTO {
     
     // Simplified user info instead of full User object
     private UserSummaryDTO createdBy;
+    
+    // Related entities
+    private List<AccommodationDTO> accommodations;
+    private List<ItineraryDayDTO> itinerary;
+    
+    // Custom setter for primitive boolean isTemplate to ensure proper mapping
+    public void setIsTemplate(boolean isTemplate) {
+        this.isTemplate = isTemplate;
+    }
+    
+    @JsonProperty("isTemplate")
+    public boolean isTemplate() {
+        return isTemplate;
+    }
     
     @Data
     @NoArgsConstructor

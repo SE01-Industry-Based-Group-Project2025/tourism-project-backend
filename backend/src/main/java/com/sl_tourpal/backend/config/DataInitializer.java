@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.PostConstruct;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +14,8 @@ import com.sl_tourpal.backend.domain.User;
 import com.sl_tourpal.backend.repository.PrivilegeRepository;
 import com.sl_tourpal.backend.repository.RoleRepository;
 import com.sl_tourpal.backend.repository.UserRepository;
+
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class DataInitializer {
@@ -28,6 +28,10 @@ public class DataInitializer {
     // Default admin credentials
     private static final String ADMIN_EMAIL = "admin@sl-tourpal.com";
     private static final String ADMIN_PASSWORD = "Admin123!";
+    
+    // Default test user credentials
+    private static final String TEST_USER_EMAIL = "sasirk1513@gmail.com";
+    private static final String TEST_USER_PASSWORD = "Sasi@1234";
 
     public DataInitializer(PrivilegeRepository privilegeRepo,
                            RoleRepository roleRepo,
@@ -90,6 +94,20 @@ public class DataInitializer {
             admin.setRoles(Set.of(adminRole));
             userRepo.save(admin);
             System.out.println("=== Default ADMIN user created: " + ADMIN_EMAIL + " / " + ADMIN_PASSWORD);
+        }
+        
+        // 5) Default Test User
+        if (userRepo.findByEmail(TEST_USER_EMAIL).isEmpty()) {
+            User testUser = new User();
+            testUser.setEmail(TEST_USER_EMAIL);
+            testUser.setPassword(passwordEncoder.encode(TEST_USER_PASSWORD));
+            testUser.setFirstName("Sasi");
+            testUser.setLastName("RK");
+            testUser.setPhone("+94123456789");
+            testUser.setEnabled(true);
+            testUser.setRoles(Set.of(userRole));
+            userRepo.save(testUser);
+            System.out.println("=== Default TEST USER created: " + TEST_USER_EMAIL + " / " + TEST_USER_PASSWORD);
         }
     }
 }

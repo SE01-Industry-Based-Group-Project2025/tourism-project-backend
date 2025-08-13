@@ -68,6 +68,18 @@ public class BookingController {
     }
     
     /**
+     * Get current user's bookings (alternative endpoint)
+     * GET /api/bookings/my-bookings
+     */
+    @GetMapping("/my-bookings")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Page<BookingResponseDTO>> getMyBookingsAlternative(Pageable pageable) {
+        Long userId = getCurrentUserId();
+        Page<BookingResponseDTO> bookings = bookingService.getMyBookings(userId, pageable);
+        return ResponseEntity.ok(bookings);
+    }
+    
+    /**
      * Get specific booking by ID (user can only access their own bookings)
      * GET /api/bookings/{id}
      */

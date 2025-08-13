@@ -28,6 +28,15 @@ public interface BookingService {
     void confirmFromWebhook(String sessionId, String paymentIntentId);
     
     /**
+     * Confirm booking from Stripe webhook with receipt URL
+     * @param sessionId the Stripe session ID
+     * @param paymentIntentId the Stripe payment intent ID
+     * @param receiptUrl the receipt URL from Stripe
+     * @param rawEvent the raw Stripe event JSON
+     */
+    void confirmFromWebhook(String sessionId, String paymentIntentId, String receiptUrl, String rawEvent);
+    
+    /**
      * Handle payment failure from Stripe webhook
      * @param sessionId the Stripe session ID
      * @param failureReason the failure reason

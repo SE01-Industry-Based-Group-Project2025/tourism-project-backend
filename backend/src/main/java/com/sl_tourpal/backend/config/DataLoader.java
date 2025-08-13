@@ -79,16 +79,16 @@ public class DataLoader implements ApplicationRunner {
     private void seedPlaces() {
         try {
             List<Place> places = Arrays.asList(
-                new Place(null, "Sigiriya Rock Fortress", "North Central Province"),
-                new Place(null, "Temple of the Sacred Tooth Relic", "Central Province"), 
-                new Place(null, "Galle Dutch Fort", "Southern Province"),
-                new Place(null, "Dambulla Cave Temple", "Central Province"),
-                new Place(null, "Yala National Park", "Southern Province"),
-                new Place(null, "Nuwara Eliya Tea Plantations", "Central Province"),
-                new Place(null, "Polonnaruwa Ancient City", "North Central Province"),
-                new Place(null, "Anuradhapura Sacred City", "North Central Province"),
-                new Place(null, "Ella Nine Arch Bridge", "Uva Province"),
-                new Place(null, "Mirissa Beach", "Southern Province")
+                createPlace("Sigiriya Rock Fortress", "North Central Province"),
+                createPlace("Temple of the Sacred Tooth Relic", "Central Province"), 
+                createPlace("Galle Dutch Fort", "Southern Province"),
+                createPlace("Dambulla Cave Temple", "Central Province"),
+                createPlace("Yala National Park", "Southern Province"),
+                createPlace("Nuwara Eliya Tea Plantations", "Central Province"),
+                createPlace("Polonnaruwa Ancient City", "North Central Province"),
+                createPlace("Anuradhapura Sacred City", "North Central Province"),
+                createPlace("Ella Nine Arch Bridge", "Uva Province"),
+                createPlace("Mirissa Beach", "Southern Province")
             );
             
             List<Place> savedPlaces = placeRepository.saveAll(places);
@@ -106,16 +106,16 @@ public class DataLoader implements ApplicationRunner {
     private void seedActivities() {
         try {
             List<Activity> activities = Arrays.asList(
-                new Activity(null, "Wildlife Safari", "Southern Province"),
-                new Activity(null, "Tea Factory Tour", "Central Province"),
-                new Activity(null, "Cultural Heritage Tour", "Central Province"),
-                new Activity(null, "Beach Activities", "Southern Province"),
-                new Activity(null, "Hiking & Trekking", "Central Province"),
-                new Activity(null, "Photography Tour", "All Regions"),
-                new Activity(null, "Whale Watching", "Southern Province"),
-                new Activity(null, "Train Journey", "Central Province"),
-                new Activity(null, "Rock Climbing", "North Central Province"),
-                new Activity(null, "Spice Garden Visit", "Central Province")
+                createActivity("Wildlife Safari", "Southern Province"),
+                createActivity("Tea Factory Tour", "Central Province"),
+                createActivity("Cultural Heritage Tour", "Central Province"),
+                createActivity("Beach Activities", "Southern Province"),
+                createActivity("Hiking & Trekking", "Central Province"),
+                createActivity("Photography Tour", "All Regions"),
+                createActivity("Whale Watching", "Southern Province"),
+                createActivity("Train Journey", "Central Province"),
+                createActivity("Rock Climbing", "North Central Province"),
+                createActivity("Spice Garden Visit", "Central Province")
             );
             
             List<Activity> savedActivities = activityRepository.saveAll(activities);
@@ -473,6 +473,20 @@ public class DataLoader implements ApplicationRunner {
             this.description = description;
             this.images = images;
         }
+    }
+
+    private Place createPlace(String name, String region) {
+        Place place = new Place();
+        place.setName(name);
+        place.setRegion(region);
+        return place;
+    }
+
+    private Activity createActivity(String name, String region) {
+        Activity activity = new Activity();
+        activity.setName(name);
+        activity.setRegion(region);
+        return activity;
     }
 
     private static class AvailabilityData {

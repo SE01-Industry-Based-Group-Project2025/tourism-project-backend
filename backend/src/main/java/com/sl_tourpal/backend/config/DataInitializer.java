@@ -55,12 +55,20 @@ public class DataInitializer {
         );
         List<Privilege> privileges = privilegeNames.stream()
             .map(name -> privilegeRepo.findByName(name)
-                .orElseGet(() -> privilegeRepo.save(new Privilege(null, name))))
+                .orElseGet(() -> {
+                    Privilege privilege = new Privilege();
+                    privilege.setName(name);
+                    return privilegeRepo.save(privilege);
+                }))
             .collect(Collectors.toList());
 
         // 2) ROLE_USER
         Role userRole = roleRepo.findByName("ROLE_USER")
-            .orElseGet(() -> roleRepo.save(new Role(null, "ROLE_USER", Set.of())));
+            .orElseGet(() -> {
+                Role role = new Role();
+                role.setName("ROLE_USER");
+                return roleRepo.save(role);
+            });
         Set<Privilege> userPrivs = privileges.stream()
             .filter(p -> Set.of("VIEW_DESTINATION","VIEW_ACTIVITY","VIEW_TOUR","BOOK_TOUR")
                              .contains(p.getName()))
@@ -70,7 +78,11 @@ public class DataInitializer {
 
         // 3) ROLE_ADMIN
         Role adminRole = roleRepo.findByName("ROLE_ADMIN")
-            .orElseGet(() -> roleRepo.save(new Role(null, "ROLE_ADMIN", Set.of())));
+            .orElseGet(() -> {
+                Role role = new Role();
+                role.setName("ROLE_ADMIN");
+                return roleRepo.save(role);
+            });
         Set<Privilege> adminPrivs = privileges.stream()
             .filter(p -> Set.of(
                 "CREATE_DESTINATION","VIEW_DESTINATION",

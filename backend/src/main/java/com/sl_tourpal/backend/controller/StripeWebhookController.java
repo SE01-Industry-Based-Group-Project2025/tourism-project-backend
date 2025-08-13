@@ -14,8 +14,11 @@ import com.google.gson.Gson;
 import com.sl_tourpal.backend.service.BookingService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
+import com.stripe.model.PaymentIntent;
+import com.stripe.model.Charge;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
+import com.stripe.param.PaymentIntentRetrieveParams;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -137,16 +140,48 @@ public class StripeWebhookController {
                 }
             }
             
-            if (sessionId != null) {
+            if (sessionId != null && paymentIntentId != null) {
                 log.info("Checkout session completed - Session ID: {}, Payment Intent ID: {}", 
                         sessionId, paymentIntentId);
                 
-                // Call booking service to confirm the booking
-                bookingService.confirmFromWebhook(sessionId, paymentIntentId);
+                // Retrieve PaymentIntent with expanded latest_charge to get receipt URL
+                String receiptUrl = null;
+                try {
+                    log.info("Retrieving PaymentIntent {} with expanded latest_charge", paymentIntentId);
+                    
+                    PaymentIntentRetrieveParams retrieveParams = PaymentIntentRetrieveParams.builder()
+                            .addExpand("latest_charge")
+                            .build();
+                    
+                    PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId, retrieveParams, null);
+                    
+                    if (paymentIntent.getLatestChargeObject() != null) {
+                        receiptUrl = paymentIntent.getLatestChargeObject().getReceiptUrl();
+                        log.info("Retrieved receipt URL from latest_charge: {}", receiptUrl);
+                    } else if (paymentIntent.getLatestCharge() != null) {
+                        // Fallback: retrieve charge separately
+                        log.info("Retrieving charge {} separately", paymentIntent.getLatestCharge());
+                        Charge charge = Charge.retrieve(paymentIntent.getLatestCharge());
+                        receiptUrl = charge.getReceiptUrl();
+                        log.info("Retrieved receipt URL from separate charge: {}", receiptUrl);
+                    }
+                    
+                    if (receiptUrl != null) {
+                        log.info("Successfully retrieved receipt URL: {}", receiptUrl);
+                    } else {
+                        log.warn("No receipt URL found for PaymentIntent: {}", paymentIntentId);
+                    }
+                    
+                } catch (Exception e) {
+                    log.error("Error retrieving receipt URL for PaymentIntent {}: {}", paymentIntentId, e.getMessage());
+                }
+                
+                // Call booking service to confirm the booking with receipt URL
+                bookingService.confirmFromWebhook(sessionId, paymentIntentId, receiptUrl, rawPayload);
                 
                 log.info("Successfully processed checkout session completion for session: {}", sessionId);
             } else {
-                log.error("Could not extract session ID from webhook event");
+                log.error("Could not extract session ID or payment intent ID from webhook event");
             }
         } catch (Exception e) {
             log.error("Error handling checkout session completed - Event ID: {}, Error: {}", 

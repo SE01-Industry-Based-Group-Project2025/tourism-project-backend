@@ -3,6 +3,7 @@ package com.sl_tourpal.backend.util;
 import com.sl_tourpal.backend.domain.Tour;
 import com.sl_tourpal.backend.domain.User;
 import com.sl_tourpal.backend.dto.TourResponseDTO;
+import com.sl_tourpal.backend.dto.TourAvailabilityRangeDTO;
 import com.sl_tourpal.backend.dto.AccommodationDTO;
 import com.sl_tourpal.backend.dto.ItineraryDayDTO;
 import org.springframework.stereotype.Component;
@@ -68,6 +69,21 @@ public class TourMapper {
                     dayDto.setImageUrl(day.getImageUrl());
                     dayDto.setDestinations(day.getDestinations());
                     return dayDto;
+                }).collect(Collectors.toList()));
+        }
+
+        // Map availability ranges
+        if (tour.getAvailabilityRanges() != null) {
+            dto.setAvailabilityRanges(tour.getAvailabilityRanges().stream()
+                .map(range -> {
+                    TourAvailabilityRangeDTO rangeDto = new TourAvailabilityRangeDTO();
+                    rangeDto.setId(range.getId());
+                    rangeDto.setStartDate(range.getStartDate());
+                    rangeDto.setEndDate(range.getEndDate());
+                    rangeDto.setAvailableSpots(15); // Default available spots
+                    rangeDto.setTotalSpots(15);     // Default total spots
+                    rangeDto.setIsAvailable(true);  // Default to available
+                    return rangeDto;
                 }).collect(Collectors.toList()));
         }
 

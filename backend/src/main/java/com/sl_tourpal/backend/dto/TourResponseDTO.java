@@ -43,6 +43,9 @@ public class TourResponseDTO {
     private List<AccommodationDTO> accommodations;
     private List<ItineraryDayDTO> itinerary;
     
+    // Availability ranges for the tour
+    private List<TourAvailabilityRangeDTO> availabilityRanges;
+    
     // Custom setter for primitive boolean isTemplate to ensure proper mapping
     public void setIsTemplate(boolean isTemplate) {
         this.isTemplate = isTemplate;

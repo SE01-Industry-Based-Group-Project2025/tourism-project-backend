@@ -3,6 +3,9 @@ package com.sl_tourpal.backend.util;
 import com.sl_tourpal.backend.domain.Tour;
 import com.sl_tourpal.backend.domain.User;
 import com.sl_tourpal.backend.dto.TourResponseDTO;
+import com.sl_tourpal.backend.dto.TourAvailabilityRangeDTO;
+import com.sl_tourpal.backend.dto.AccommodationDTO;
+import com.sl_tourpal.backend.dto.ItineraryDayDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -32,6 +35,7 @@ public class TourMapper {
         dto.setActivities(tour.getActivities());
         dto.setStatus(tour.getStatus());
         dto.setIsCustom(tour.getIsCustom());
+        dto.setIsTemplate(tour.getIsTemplate()); // Ensure correct mapping of isTemplate field
         dto.setAvailableSpots(tour.getAvailableSpots());
         dto.setPrice(tour.getPrice());
         dto.setCreatedAt(tour.getCreatedAt());
@@ -40,6 +44,47 @@ public class TourMapper {
         // Map the createdBy user safely
         if (tour.getCreatedBy() != null) {
             dto.setCreatedBy(mapUserToSummary(tour.getCreatedBy()));
+        }
+
+        // Map accommodations
+        if (tour.getAccommodations() != null) {
+            dto.setAccommodations(tour.getAccommodations().stream()
+                .map(accommodation -> {
+                    AccommodationDTO accDto = new AccommodationDTO();
+                    accDto.setTitle(accommodation.getTitle());
+                    accDto.setDescription(accommodation.getDescription());
+                    // Note: images not mapped as it's a complex nested structure
+                    return accDto;
+                }).collect(Collectors.toList()));
+        }
+
+        // Map itinerary days
+        if (tour.getItineraryDays() != null) {
+            dto.setItinerary(tour.getItineraryDays().stream()
+                .map(day -> {
+                    ItineraryDayDTO dayDto = new ItineraryDayDTO();
+                    dayDto.setDayNumber(day.getDayNumber());
+                    dayDto.setTitle(day.getTitle());
+                    dayDto.setDescription(day.getDescription());
+                    dayDto.setImageUrl(day.getImageUrl());
+                    dayDto.setDestinations(day.getDestinations());
+                    return dayDto;
+                }).collect(Collectors.toList()));
+        }
+
+        // Map availability ranges
+        if (tour.getAvailabilityRanges() != null) {
+            dto.setAvailabilityRanges(tour.getAvailabilityRanges().stream()
+                .map(range -> {
+                    TourAvailabilityRangeDTO rangeDto = new TourAvailabilityRangeDTO();
+                    rangeDto.setId(range.getId());
+                    rangeDto.setStartDate(range.getStartDate());
+                    rangeDto.setEndDate(range.getEndDate());
+                    rangeDto.setAvailableSpots(15); // Default available spots
+                    rangeDto.setTotalSpots(15);     // Default total spots
+                    rangeDto.setIsAvailable(true);  // Default to available
+                    return rangeDto;
+                }).collect(Collectors.toList()));
         }
 
         return dto;

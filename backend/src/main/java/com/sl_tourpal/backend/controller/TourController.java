@@ -17,10 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sl_tourpal.backend.domain.Tour;
 import com.sl_tourpal.backend.dto.AddTourRequest;
-import com.sl_tourpal.backend.dto.TouristTourRequestDTO;
 import com.sl_tourpal.backend.dto.TourResponseDTO;
-import com.sl_tourpal.backend.service.TourService;
+import com.sl_tourpal.backend.dto.TouristTourRequestDTO;
 import com.sl_tourpal.backend.security.JwtUtil;
+import com.sl_tourpal.backend.service.TourService;
+import com.sl_tourpal.backend.util.TourMapper;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,33 +30,50 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/tours")
 @RequiredArgsConstructor
 public class TourController {
-    private final TourService tourService; //injected service for tour operations
+    private final TourService tourService; // injected service for tour operations
     private final JwtUtil jwtUtil;
+    private final TourMapper tourMapper;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Tour> createNewTour(@Valid @RequestBody AddTourRequest req) {
-        Tour created = tourService.createTour(req);
-        return ResponseEntity.status(201).body(created);
+    public ResponseEntity<TourResponseDTO> createTour(@Valid @RequestBody AddTourRequest tourRequest) {
+        // Validate required fields if it's not a template
+        if (!tourRequest.isTemplate()) {
+            // Additional validation for real tours will be handled in service layer
+        }
+        Tour savedTour = tourService.createTour(tourRequest);
+        TourResponseDTO response = tourMapper.toResponseDTO(savedTour);
+        return ResponseEntity.status(201).body(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<Tour>> getAllTours() {
-        List<Tour> tours = tourService.getAllTours();
-        return ResponseEntity.ok(tours);
+    public ResponseEntity<List<TourResponseDTO>> getAllTours(
+            @RequestParam(required = false) Boolean isTemplate) {
+        List<Tour> tours;
+        if (isTemplate != null) {
+            tours = tourService.getToursByTemplate(isTemplate);
+        } else {
+            tours = tourService.getAllTours();
+        }
+        List<TourResponseDTO> response = tours.stream()
+                .map(tourMapper::toResponseDTO)
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Tour> getTourById(@PathVariable Long id) {
+    public ResponseEntity<TourResponseDTO> getTourById(@PathVariable Long id) {
         Tour tour = tourService.getTourById(id);
-        return ResponseEntity.ok(tour);
+        TourResponseDTO response = tourMapper.toResponseDTO(tour);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Tour> updateTour(@PathVariable Long id, @Valid @RequestBody AddTourRequest req) {
+    public ResponseEntity<TourResponseDTO> updateTour(@PathVariable Long id, @Valid @RequestBody AddTourRequest req) {
         Tour updated = tourService.updateTour(id, req);
-        return ResponseEntity.ok(updated);
+        TourResponseDTO response = tourMapper.toResponseDTO(updated);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
@@ -71,12 +89,13 @@ public class TourController {
     public ResponseEntity<?> createCustomTourRequest(
             @Valid @RequestBody TouristTourRequestDTO touristRequest,
             @RequestHeader("Authorization") String authHeader) {
-        
+
         try {
             System.out.println("=== CUSTOM TOUR REQUEST DEBUG ===");
             System.out.println("Received request: " + touristRequest);
             System.out.println("Name: " + touristRequest.getName());
-            System.out.println("Duration: " + touristRequest.getDurationValue() + " " + touristRequest.getDurationUnit());
+            System.out
+                    .println("Duration: " + touristRequest.getDurationValue() + " " + touristRequest.getDurationUnit());
             System.out.println("Region: " + touristRequest.getRegion());
             System.out.println("Activities: " + touristRequest.getActivities());
             System.out.println("Price: " + touristRequest.getPrice());
@@ -84,14 +103,15 @@ public class TourController {
             System.out.println("Start Date: " + touristRequest.getStartDate());
             System.out.println("End Date: " + touristRequest.getEndDate());
             System.out.println("Special Requirements: " + touristRequest.getSpecialRequirements());
-            
+
             String token = authHeader.substring(7); // Remove "Bearer "
             String userEmail = jwtUtil.extractUsername(token);
             System.out.println("User email: " + userEmail);
-            
+
             Tour customTour = tourService.createCustomTourRequest(touristRequest, userEmail);
             System.out.println("Tour created successfully: " + customTour.getId());
-            return ResponseEntity.status(201).body(customTour);
+            TourResponseDTO response = tourMapper.toResponseDTO(customTour);
+            return ResponseEntity.status(201).body(response);
         } catch (Exception e) {
             System.err.println("Error creating custom tour: " + e.getMessage());
             e.printStackTrace();
@@ -102,15 +122,18 @@ public class TourController {
     // Tourists can view their own custom tour requests
     @GetMapping("/my-custom-tours")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<Tour>> getMyCustomTours(
+    public ResponseEntity<List<TourResponseDTO>> getMyCustomTours(
             @RequestHeader("Authorization") String authHeader) {
-        
+
         try {
             String token = authHeader.substring(7);
             String userEmail = jwtUtil.extractUsername(token);
-            
+
             List<Tour> customTours = tourService.getCustomToursByUser(userEmail);
-            return ResponseEntity.ok(customTours);
+            List<TourResponseDTO> tourDTOs = customTours.stream()
+                    .map(tourMapper::toResponseDTO)
+                    .toList();
+            return ResponseEntity.ok(tourDTOs);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
@@ -135,10 +158,11 @@ public class TourController {
     // Admin can approve custom tours
     @PutMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Tour> approveCustomTour(@PathVariable Long id) {
+    public ResponseEntity<TourResponseDTO> approveCustomTour(@PathVariable Long id) {
         try {
             Tour approvedTour = tourService.approveCustomTour(id);
-            return ResponseEntity.ok(approvedTour);
+            TourResponseDTO response = tourMapper.toResponseDTO(approvedTour);
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
@@ -147,12 +171,13 @@ public class TourController {
     // Admin can reject custom tours
     @PutMapping("/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Tour> rejectCustomTour(
+    public ResponseEntity<TourResponseDTO> rejectCustomTour(
             @PathVariable Long id,
             @RequestParam String reason) {
         try {
             Tour rejectedTour = tourService.rejectCustomTour(id, reason);
-            return ResponseEntity.ok(rejectedTour);
+            TourResponseDTO response = tourMapper.toResponseDTO(rejectedTour);
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
@@ -161,12 +186,13 @@ public class TourController {
     // Admin can update custom tour status
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Tour> updateCustomTourStatus(
+    public ResponseEntity<TourResponseDTO> updateCustomTourStatus(
             @PathVariable Long id,
             @RequestParam String status) {
         try {
             Tour updatedTour = tourService.updateCustomTourStatus(id, status);
-            return ResponseEntity.ok(updatedTour);
+            TourResponseDTO response = tourMapper.toResponseDTO(updatedTour);
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
@@ -174,12 +200,12 @@ public class TourController {
 
     // Get all tours with filtering
     @GetMapping("/filter")
-    public ResponseEntity<List<Tour>> getToursWithFilter(
+    public ResponseEntity<List<TourResponseDTO>> getToursWithFilter(
             @RequestParam(required = false) Boolean isCustom,
             @RequestParam(required = false) String status) {
-        
+
         List<Tour> tours;
-        
+
         if (isCustom != null && isCustom) {
             if (status != null) {
                 tours = tourService.findByIsCustomTrueAndStatus(status);
@@ -191,7 +217,12 @@ public class TourController {
         } else {
             tours = tourService.getAllTours();
         }
-        
-        return ResponseEntity.ok(tours);
+
+        // Convert to DTOs before returning
+        List<TourResponseDTO> response = tours.stream()
+                .map(tourMapper::toResponseDTO)
+                .toList();
+
+        return ResponseEntity.ok(response);
     }
 }

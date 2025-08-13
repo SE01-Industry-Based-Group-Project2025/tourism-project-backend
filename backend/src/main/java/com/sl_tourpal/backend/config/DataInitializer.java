@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.PostConstruct;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +14,8 @@ import com.sl_tourpal.backend.domain.User;
 import com.sl_tourpal.backend.repository.PrivilegeRepository;
 import com.sl_tourpal.backend.repository.RoleRepository;
 import com.sl_tourpal.backend.repository.UserRepository;
+
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class DataInitializer {
@@ -28,6 +28,10 @@ public class DataInitializer {
     // Default admin credentials
     private static final String ADMIN_EMAIL = "admin@sl-tourpal.com";
     private static final String ADMIN_PASSWORD = "Admin123!";
+    
+    // Default test user credentials
+    private static final String TEST_USER_EMAIL = "sasirk1513@gmail.com";
+    private static final String TEST_USER_PASSWORD = "Sasi@1234";
 
     public DataInitializer(PrivilegeRepository privilegeRepo,
                            RoleRepository roleRepo,
@@ -51,12 +55,20 @@ public class DataInitializer {
         );
         List<Privilege> privileges = privilegeNames.stream()
             .map(name -> privilegeRepo.findByName(name)
-                .orElseGet(() -> privilegeRepo.save(new Privilege(null, name))))
+                .orElseGet(() -> {
+                    Privilege privilege = new Privilege();
+                    privilege.setName(name);
+                    return privilegeRepo.save(privilege);
+                }))
             .collect(Collectors.toList());
 
         // 2) ROLE_USER
         Role userRole = roleRepo.findByName("ROLE_USER")
-            .orElseGet(() -> roleRepo.save(new Role(null, "ROLE_USER", Set.of())));
+            .orElseGet(() -> {
+                Role role = new Role();
+                role.setName("ROLE_USER");
+                return roleRepo.save(role);
+            });
         Set<Privilege> userPrivs = privileges.stream()
             .filter(p -> Set.of("VIEW_DESTINATION","VIEW_ACTIVITY","VIEW_TOUR","BOOK_TOUR")
                              .contains(p.getName()))
@@ -66,7 +78,11 @@ public class DataInitializer {
 
         // 3) ROLE_ADMIN
         Role adminRole = roleRepo.findByName("ROLE_ADMIN")
-            .orElseGet(() -> roleRepo.save(new Role(null, "ROLE_ADMIN", Set.of())));
+            .orElseGet(() -> {
+                Role role = new Role();
+                role.setName("ROLE_ADMIN");
+                return roleRepo.save(role);
+            });
         Set<Privilege> adminPrivs = privileges.stream()
             .filter(p -> Set.of(
                 "CREATE_DESTINATION","VIEW_DESTINATION",
@@ -90,6 +106,20 @@ public class DataInitializer {
             admin.setRoles(Set.of(adminRole));
             userRepo.save(admin);
             System.out.println("=== Default ADMIN user created: " + ADMIN_EMAIL + " / " + ADMIN_PASSWORD);
+        }
+        
+        // 5) Default Test User
+        if (userRepo.findByEmail(TEST_USER_EMAIL).isEmpty()) {
+            User testUser = new User();
+            testUser.setEmail(TEST_USER_EMAIL);
+            testUser.setPassword(passwordEncoder.encode(TEST_USER_PASSWORD));
+            testUser.setFirstName("Sasi");
+            testUser.setLastName("RK");
+            testUser.setPhone("+94123456789");
+            testUser.setEnabled(true);
+            testUser.setRoles(Set.of(userRole));
+            userRepo.save(testUser);
+            System.out.println("=== Default TEST USER created: " + TEST_USER_EMAIL + " / " + TEST_USER_PASSWORD);
         }
     }
 }

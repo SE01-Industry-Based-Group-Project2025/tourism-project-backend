@@ -45,17 +45,18 @@ public class TourServiceImpl implements TourService {
     @Override
     @Transactional
     public Tour createTour(AddTourRequest req) {
-        // Conditional validation based on isTemplate
+        // Conditional validation based on isTemplate and isCustom
         boolean isTemplate = req.isTemplate();
+        boolean isCustom = req.getIsCustom() != null ? req.getIsCustom() : false;
         
-        logger.info("Creating tour with isTemplate: {}, name: {}", isTemplate, req.getName());
+        logger.info("Creating tour with isTemplate: {}, isCustom: {}, name: {}", isTemplate, isCustom, req.getName());
         
-        if (!isTemplate) {
-            // Strict validation for real tours (isTemplate = false)
-            logger.info("Applying strict validation for non-template tour");
+        if (!isTemplate && !isCustom) {
+            // Strict validation only for real published tours (not templates, not custom requests)
+            logger.info("Applying strict validation for published tour");
             validateRequiredFieldsForTour(req);
         } else {
-            logger.info("Skipping validation for template");
+            logger.info("Skipping validation for template or custom tour request");
         }
         
         Tour tour = new Tour();
@@ -426,7 +427,7 @@ public class TourServiceImpl implements TourService {
     }
     
     /**
-     * Validates required fields for non-template tours
+     * Validates required fields for published tours only (not templates or custom requests)
      */
     private void validateRequiredFieldsForTour(AddTourRequest req) {
         List<String> errors = new ArrayList<>();

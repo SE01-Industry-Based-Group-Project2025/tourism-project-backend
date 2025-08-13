@@ -1,68 +1,32 @@
 package com.sl_tourpal.backend.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class TourAvailabilityRangeDTO {
     private Long id;
     private LocalDate startDate;
     private LocalDate endDate;
-    private Integer availableSpots;
-    private Integer totalSpots;
-    private Boolean isAvailable;
+    private LocalDate date;
+    private int capacity;
+    private int booked;
+    private int availableSpots;
+    private int totalSpots;
+    private boolean available;
     
-    public TourAvailabilityRangeDTO() {}
-    
-    public TourAvailabilityRangeDTO(LocalDate startDate, LocalDate endDate, Integer availableSpots) {
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.availableSpots = availableSpots;
-    }
-    
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
+    public TourAvailabilityRangeDTO(Long id, LocalDate date, int capacity, int booked) {
         this.id = id;
-    }
-    
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-    
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-    
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-    
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-    
-    public Integer getAvailableSpots() {
-        return availableSpots;
-    }
-    
-    public void setAvailableSpots(Integer availableSpots) {
-        this.availableSpots = availableSpots;
-    }
-    
-    public Integer getTotalSpots() {
-        return totalSpots;
-    }
-    
-    public void setTotalSpots(Integer totalSpots) {
-        this.totalSpots = totalSpots;
-    }
-    
-    public Boolean getIsAvailable() {
-        return isAvailable;
-    }
-    
-    public void setIsAvailable(Boolean isAvailable) {
-        this.isAvailable = isAvailable;
+        this.date = date;
+        this.capacity = capacity;
+        this.booked = booked;
+        this.availableSpots = capacity - booked;
+        this.totalSpots = capacity;
+        this.available = availableSpots > 0;
     }
 }

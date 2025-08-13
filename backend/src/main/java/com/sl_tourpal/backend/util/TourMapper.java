@@ -82,7 +82,7 @@ public class TourMapper {
                     rangeDto.setEndDate(range.getEndDate());
                     rangeDto.setAvailableSpots(15); // Default available spots
                     rangeDto.setTotalSpots(15);     // Default total spots
-                    rangeDto.setIsAvailable(true);  // Default to available
+                    rangeDto.setAvailable(true);  // Default to available
                     return rangeDto;
                 }).collect(Collectors.toList()));
         }

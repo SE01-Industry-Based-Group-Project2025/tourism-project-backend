@@ -27,4 +27,5 @@ public class AdminBookingListDTO {
     private BookingStatus status;
     private String paymentStatus;
     private LocalDateTime createdAt;
+    private PaymentSummaryDTO payment;
 }

@@ -24,4 +24,5 @@ public class BookingResponseDTO {
     private BookingStatus status;
     private String specialNote;
     private LocalDateTime createdAt;
+    private PaymentSummaryDTO payment;
 }

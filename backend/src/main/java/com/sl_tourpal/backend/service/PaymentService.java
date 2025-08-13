@@ -3,6 +3,8 @@ package com.sl_tourpal.backend.service;
 import com.sl_tourpal.backend.domain.Payment;
 import com.sl_tourpal.backend.domain.Booking;
 
+import java.util.Optional;
+
 /**
  * Service for managing payments
  */
@@ -29,4 +31,11 @@ public interface PaymentService {
     Payment upsertPayment(Booking booking, String paymentIntentId, 
                          java.math.BigDecimal amount, String currency, 
                          String status, String receiptUrl, String rawEvent);
+    
+    /**
+     * Find payment by booking ID
+     * @param bookingId the booking ID
+     * @return optional payment
+     */
+    Optional<Payment> findByBookingId(Long bookingId);
 }

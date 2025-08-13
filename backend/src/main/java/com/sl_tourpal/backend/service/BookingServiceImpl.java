@@ -69,10 +69,25 @@ public class BookingServiceImpl implements BookingService {
         
         // 6. Create Stripe checkout session
         try {
+            log.info("Creating Stripe checkout session for authenticated user: {}", user.getEmail());
+            log.info("Setting BOTH customer_email AND receipt_email to: {} for maximum compatibility", user.getEmail());
+            
             SessionCreateParams params = SessionCreateParams.builder()
                     .setMode(SessionCreateParams.Mode.PAYMENT)
                     .setSuccessUrl(baseUrl + "/booking-success?session_id={CHECKOUT_SESSION_ID}")
                     .setCancelUrl(baseUrl + "/booking-cancel")
+                    .setCustomerEmail(user.getEmail())  // Set customer email at session level
+                    // Set payment intent data with receipt email and metadata
+                    .setPaymentIntentData(
+                            SessionCreateParams.PaymentIntentData.builder()
+                                    .setReceiptEmail(user.getEmail())  // This is the primary receipt email setting
+                                    .putMetadata("bookingId", booking.getId().toString())
+                                    .putMetadata("userId", user.getId().toString())
+                                    .putMetadata("tourId", tour.getId().toString())
+                                    .putMetadata("customer_email", user.getEmail())
+                                    .putMetadata("customer_name", user.getFirstName() + " " + user.getLastName())
+                                    .build()
+                    )
                     .addLineItem(
                             SessionCreateParams.LineItem.builder()
                                     .setQuantity((long) request.getGuestCount())
@@ -95,13 +110,26 @@ public class BookingServiceImpl implements BookingService {
                     .putMetadata("userId", userId.toString())
                     .build();
             
+            log.info("Creating Stripe session with receipt email: {} for user: {} (booking: {})", 
+                    user.getEmail(), user.getId(), booking.getId());
+            
             Session session = Session.create(params);
+            
+            log.info("✅ Stripe checkout session created successfully!");
+            log.info("📧 Session ID: {}", session.getId());
+            log.info("📧 Payment Intent: {}", session.getPaymentIntent());
+            log.info("📧 Customer Email (session level): {}", session.getCustomerEmail());
+            log.info("📧 Receipt email configured for authenticated user: {}", user.getEmail());
+            log.info("🔗 Checkout URL: {}", session.getUrl());
+            log.info("ℹ️  Note: Receipt emails should be sent by Stripe after payment with BOTH customer_email and receipt_email set");
+            log.info("🎯 DEBUG: Check Stripe Dashboard → Events → payment_intent.succeeded for receipt_email field");
             
             // 7. Update booking with session ID
             booking.setCheckoutSessionId(session.getId());
             bookingRepository.save(booking);
             
-            log.info("Created checkout session {} for booking {}", session.getId(), booking.getId());
+            log.info("Checkout session {} linked to booking {} - receipt will be sent to authenticated user: {}", 
+                    session.getId(), booking.getId(), user.getEmail());
             
             return new CheckoutSessionResponseDTO(session.getId(), session.getUrl(), booking.getId());
             
@@ -113,6 +141,12 @@ public class BookingServiceImpl implements BookingService {
     
     @Override
     public void confirmFromWebhook(String sessionId, String paymentIntentId) {
+        // Delegate to the enhanced method with null receipt URL and raw event
+        confirmFromWebhook(sessionId, paymentIntentId, null, null);
+    }
+    
+    @Override
+    public void confirmFromWebhook(String sessionId, String paymentIntentId, String receiptUrl, String rawEvent) {
         log.info("=== WEBHOOK CONFIRMATION START ===");
         log.info("Confirming booking from webhook for session: {} with payment intent: {}", sessionId, paymentIntentId);
         
@@ -151,9 +185,23 @@ public class BookingServiceImpl implements BookingService {
             
             log.info("Successfully updated inventory for {} guests", booking.getGuestCount());
             
-            // Record payment
-            log.info("Recording payment for booking {} with payment intent {}", booking.getId(), paymentIntentId);
-            paymentService.recordSuccessfulPayment(booking, paymentIntentId);
+            // Record payment with receipt URL
+            log.info("Recording payment for booking {} with payment intent {} and receipt URL: {}", 
+                    booking.getId(), paymentIntentId, receiptUrl != null ? "present" : "null");
+            
+            paymentService.upsertPayment(
+                    booking, 
+                    paymentIntentId, 
+                    booking.getTotalAmount(), 
+                    booking.getCurrency(), 
+                    "succeeded", 
+                    receiptUrl, 
+                    rawEvent
+            );
+            
+            if (receiptUrl != null) {
+                log.info("Stored receipt URL for booking {}: {}", booking.getId(), receiptUrl);
+            }
             
             log.info("=== WEBHOOK CONFIRMATION COMPLETED SUCCESSFULLY ===");
             
@@ -262,6 +310,8 @@ public class BookingServiceImpl implements BookingService {
     }
     
     private BookingResponseDTO toBookingResponseDTO(Booking booking) {
+        PaymentSummaryDTO payment = loadPaymentSummary(booking.getId());
+        
         return new BookingResponseDTO(
                 booking.getId(),
                 booking.getTour().getId(),
@@ -272,12 +322,14 @@ public class BookingServiceImpl implements BookingService {
                 booking.getCurrency(),
                 booking.getStatus(),
                 booking.getSpecialNote(),
-                booking.getCreatedAt()
+                booking.getCreatedAt(),
+                payment
         );
     }
     
     private AdminBookingListDTO toAdminBookingListDTO(Booking booking) {
-        String paymentStatus = null; // TODO: Add payment status lookup if needed
+        PaymentSummaryDTO payment = loadPaymentSummary(booking.getId());
+        String paymentStatus = payment != null ? payment.getStatus() : "pending";
         
         return new AdminBookingListDTO(
                 booking.getId(),
@@ -292,7 +344,18 @@ public class BookingServiceImpl implements BookingService {
                 booking.getCurrency(),
                 booking.getStatus(),
                 paymentStatus,
-                booking.getCreatedAt()
+                booking.getCreatedAt(),
+                payment
         );
+    }
+    
+    private PaymentSummaryDTO loadPaymentSummary(Long bookingId) {
+        return paymentService.findByBookingId(bookingId)
+                .map(payment -> new PaymentSummaryDTO(
+                        payment.getReceiptUrl(),
+                        payment.getStatus(),
+                        payment.getProviderPaymentIntentId()
+                ))
+                .orElse(new PaymentSummaryDTO(null, "pending", null));
     }
 }

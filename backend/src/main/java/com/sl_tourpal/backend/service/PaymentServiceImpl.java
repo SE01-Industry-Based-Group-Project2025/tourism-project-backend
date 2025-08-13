@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -64,5 +65,10 @@ public class PaymentServiceImpl implements PaymentService {
                 booking.getId(), status, amount, currency);
         
         return saved;
+    }
+    
+    @Override
+    public Optional<Payment> findByBookingId(Long bookingId) {
+        return paymentRepository.findByBookingId(bookingId);
     }
 }
